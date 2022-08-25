@@ -2,6 +2,7 @@ import typing
 from panther_utils import PantherEvent, standard_tags
 
 __all__ = [
+    "rule_tags",
     "SYSTEM_LOG_TYPE",
     "SUPPORT_ACCESS_EVENTS",
     "SUPPORT_RESET_EVENTS",
@@ -38,6 +39,10 @@ SHARED_SUMMARY_ATTRS = [
     "displayMessage",
     "p_any_ip_addresses",
 ]
+
+
+def rule_tags(*extra_tags: str) -> typing.List[str]:
+    return [*SHARED_TAGS, *extra_tags]
 
 
 def create_alert_context(event: PantherEvent) -> typing.Dict[str, typing.Any]:
