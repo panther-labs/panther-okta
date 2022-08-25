@@ -1,11 +1,4 @@
-from typing import List
-
 from panther_config import detection
-from panther_utils import (
-    PantherEvent,
-    match_filters,
-)
-
 from panther_okta import sample_logs
 
 from panther_okta._shared import (
