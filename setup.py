@@ -19,7 +19,8 @@ setup(
     keywords='security detection',
     install_requires=[
         'panther_config>=0.0.12,<0.1.0',
-        'panther_utils>=0.0.3,<0.1.0',
+        'panther_utils>=0.0.4,<0.1.0',
+        'panther_core>=0.2.3<=0.3.0',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

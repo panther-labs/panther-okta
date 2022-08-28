@@ -1,19 +1,16 @@
+from panther_core import PantherEvent
+from panther_utils import match_filters
 from panther_config import detection
-from panther_okta import sample_logs
 
-from panther_okta._shared import (
+from .. import sample_logs
+from .._shared import (
     rule_tags,
     standard_tags,
     SYSTEM_LOG_TYPE,
-    SHARED_SUMMARY_ATTRS,
-    SUPPORT_ACCESS_EVENTS,
-    SUPPORT_RESET_EVENTS,
     create_alert_context,
-)
-
-from panther_utils import (
-    PantherEvent,
-    match_filters,
+    SHARED_SUMMARY_ATTRS,
+    SUPPORT_RESET_EVENTS,
+    SUPPORT_ACCESS_EVENTS,
 )
 
 __all__ = [
@@ -22,14 +19,13 @@ __all__ = [
 ]
 
 
-def _account_support_access_title(event: PantherEvent) -> str:
-    return f"Okta Support Access Granted by {event.udm('actor_user')}"
-
-
 def account_support_access(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """Detects when an admin user has granted access to Okta Support for your account"""
+
+    def _title(event: PantherEvent) -> str:
+        return f"Okta Support Access Granted by {event.udm('actor_user')}"
 
     return detection.Rule(
         name=(overrides.name or "Okta Support Access Granted"),
@@ -60,7 +56,7 @@ def account_support_access(
                 match_filters.deep_in("eventType", SUPPORT_ACCESS_EVENTS),
             ]
         ),
-        alert_title=(overrides.alert_title or _account_support_access_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(
@@ -81,14 +77,13 @@ def account_support_access(
     )
 
 
-def _support_reset_title(event: PantherEvent) -> str:
-    return f"Okta Support Reset Password or MFA for user {event.udm('actor_user')}"
-
-
 def support_reset(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """DESCRIPTION"""
+
+    def _title(event: PantherEvent) -> str:
+        return f"Okta Support Reset Password or MFA for user {event.udm('actor_user')}"
 
     return detection.Rule(
         name=(overrides.name or ""),
@@ -109,7 +104,7 @@ def support_reset(
                 match_filters.deep_equal("client.geographicalContext.country", None),
             ]
         ),
-        alert_title=(overrides.alert_title or _support_reset_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(

@@ -1,16 +1,13 @@
+from panther_core import PantherEvent
+from panther_utils import match_filters
 from panther_config import detection
-from panther_okta import sample_logs
 
-from panther_okta._shared import (
+from .. import sample_logs
+from .._shared import (
     rule_tags,
     SYSTEM_LOG_TYPE,
     SHARED_SUMMARY_ATTRS,
     create_alert_context,
-)
-
-from panther_utils import (
-    PantherEvent,
-    match_filters,
 )
 
 __all__ = [
@@ -19,26 +16,23 @@ __all__ = [
 ]
 
 
-def _api_key_created_title(event: PantherEvent) -> str:
-    from panther_base_helpers import deep_get  # type: ignore
-
-    target = event.get("target", [{}])
-    key_name = (
-        target[0].get("displayName", "MISSING DISPLAY NAME")
-        if target
-        else "MISSING TARGET"
-    )
-
-    return (
-        f"{deep_get(event, 'actor', 'displayName')} <{deep_get(event, 'actor', 'alternateId')}>"
-        f"created a new API key - <{key_name}>"
-    )
-
-
 def api_key_created(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user created an API Key in Okta"""
+
+    def _title(event: PantherEvent) -> str:
+        target = event.get("target", [{}])
+        key_name = (
+            target[0].get("displayName", "MISSING DISPLAY NAME")
+            if target
+            else "MISSING TARGET"
+        )
+
+        return (
+            f"{event.deep_get('actor', 'displayName')} <{event.deep_get('actor', 'alternateId')}>"
+            f"created a new API key - <{key_name}>"
+        )
 
     return detection.Rule(
         name=(overrides.name or "Okta API Key Created"),
@@ -68,7 +62,7 @@ def api_key_created(
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]
         ),
-        alert_title=(overrides.alert_title or _api_key_created_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(
@@ -84,24 +78,23 @@ def api_key_created(
     )
 
 
-def _api_key_revoked_title(event: PantherEvent) -> str:
-    target = event.get("target", [{}])
-    key_name = (
-        target[0].get("displayName", "MISSING DISPLAY NAME")
-        if target
-        else "MISSING TARGET"
-    )
-
-    return (
-        f"{event.get('actor', {}).get('displayName')} <{event.get('actor', {}).get('alternateId')}>"
-        f"revoked API key - <{key_name}>"
-    )
-
-
 def api_key_revoked(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has revoked an API Key in Okta"""
+
+    def _title(event: PantherEvent) -> str:
+        target = event.get("target", [{}])
+        key_name = (
+            target[0].get("displayName", "MISSING DISPLAY NAME")
+            if target
+            else "MISSING TARGET"
+        )
+
+        return (
+            f"{event.get('actor', {}).get('displayName')} <{event.get('actor', {}).get('alternateId')}>"
+            f"revoked API key - <{key_name}>"
+        )
 
     return detection.Rule(
         name=(overrides.name or "Okta API Key Revoked"),
@@ -122,7 +115,7 @@ def api_key_revoked(
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]
         ),
-        alert_title=(overrides.alert_title or _api_key_revoked_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(

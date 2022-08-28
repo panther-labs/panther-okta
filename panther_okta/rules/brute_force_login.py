@@ -1,6 +1,8 @@
+from panther_core import PantherEvent
+from panther_utils import match_filters
 from panther_config import detection
-from panther_okta import sample_logs
 
+from panther_okta import sample_logs
 from panther_okta._shared import (
     rule_tags,
     SYSTEM_LOG_TYPE,
@@ -8,26 +10,20 @@ from panther_okta._shared import (
     create_alert_context,
 )
 
-from panther_utils import (
-    PantherEvent,
-    match_filters,
-)
-
 __all__ = ["brute_force_logins"]
-
-
-def _brute_force_logins_title(event: PantherEvent) -> str:
-    return (
-        f"Suspected brute force Okta logins to account "
-        f"{event.get('actor', {}).get('alternateId', '<UNKNOWN_ACCOUNT>')}, due to "
-        f"[{event.get('outcome', {}).get('reason', '<UNKNOWN_REASON>')}]"
-    )
 
 
 def brute_force_logins(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has failed to login more than 5 times in 15 minutes"""
+
+    def _title(event: PantherEvent) -> str:
+        return (
+            f"Suspected brute force Okta logins to account "
+            f"{event.get('actor', {}).get('alternateId', '<UNKNOWN_ACCOUNT>')}, due to "
+            f"[{event.get('outcome', {}).get('reason', '<UNKNOWN_REASON>')}]"
+        )
 
     return detection.Rule(
         name=(overrides.name or "--DEPRECATED-- Okta Brute Force Logins"),
@@ -54,7 +50,7 @@ def brute_force_logins(
                 match_filters.deep_equal("outcome.result", "FAILURE"),
             ]
         ),
-        alert_title=(overrides.alert_title or _brute_force_logins_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(

@@ -1,5 +1,5 @@
 import typing
-from panther_utils import PantherEvent, standard_tags
+from panther_utils import standard_tags
 
 __all__ = [
     "rule_tags",
@@ -45,7 +45,7 @@ def rule_tags(*extra_tags: str) -> typing.List[str]:
     return [*SHARED_TAGS, *extra_tags]
 
 
-def create_alert_context(event: PantherEvent) -> typing.Dict[str, typing.Any]:
+def create_alert_context(event: typing.Any) -> typing.Dict[str, typing.Any]:
     """Returns common context for Okta alerts"""
 
     return {

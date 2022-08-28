@@ -1,7 +1,8 @@
-from panther_config import detection
-from panther_okta import sample_logs
+from panther_utils import match_filters
+from panther_config import detection, PantherEvent
 
-from panther_okta._shared import (
+from .. import sample_logs
+from .._shared import (
     rule_tags,
     standard_tags,
     SYSTEM_LOG_TYPE,
@@ -10,25 +11,19 @@ from panther_okta._shared import (
     SUPPORT_ACCESS_EVENTS,
 )
 
-from panther_utils import (
-    PantherEvent,
-    match_filters,
-)
-
 __all__ = [
     "admin_disabled_mfa",
     "admin_role_assigned",
 ]
 
 
-def _admin_disabled_mfa_title(event: PantherEvent) -> str:
-    return f"Okta System-wide MFA Disabled by Admin User {event.udm('actor_user')}"
-
-
 def admin_disabled_mfa(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """An admin user has disabled the MFA requirement for your Okta account"""
+
+    def _title(event: PantherEvent) -> str:
+        return f"Okta System-wide MFA Disabled by Admin User {event.udm('actor_user')}"
 
     return detection.Rule(
         name=(overrides.name or "Okta MFA Globally Disabled"),
@@ -60,7 +55,7 @@ def admin_disabled_mfa(
                 match_filters.deep_equal("eventType", SUPPORT_ACCESS_EVENTS),
             ]
         ),
-        alert_title=(overrides.alert_title or _admin_disabled_mfa_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(
@@ -81,46 +76,39 @@ def admin_disabled_mfa(
     )
 
 
-def _admin_role_assigned_title(event: PantherEvent) -> str:
-    from panther_base_helpers import deep_get  # type: ignore
-
-    target = event.get("target", [{}])
-    display_name = (
-        target[0].get("displayName", "MISSING DISPLAY NAME") if target else ""
-    )
-    alternate_id = (
-        target[0].get("alternateId", "MISSING ALTERNATE ID") if target else ""
-    )
-    privilege = deep_get(
-        event,
-        "debugContext",
-        "debugData",
-        "privilegeGranted",
-        default="<UNKNOWN_PRIVILEGE>",
-    )
-
-    return (
-        f"{deep_get(event, 'actor', 'displayName')} "
-        f"<{deep_get(event, 'actor', 'alternateId')}> granted "
-        f"[{privilege}] privileges to {display_name} <{alternate_id}>"
-    )
-
-
-def _admin_role_assigned_severity(event: PantherEvent) -> str:
-    from panther_base_helpers import deep_get  # type: ignore
-
-    if (
-        deep_get(event, "debugContext", "debugData", "privilegeGranted")
-        == "Super administrator"
-    ):
-        return "HIGH"
-    return "INFO"
-
-
 def admin_role_assigned(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has been granted administrative privileges in Okta"""
+
+    def _title(event: PantherEvent) -> str:
+        target = event.get("target", [{}])
+        display_name = (
+            target[0].get("displayName", "MISSING DISPLAY NAME") if target else ""
+        )
+        alternate_id = (
+            target[0].get("alternateId", "MISSING ALTERNATE ID") if target else ""
+        )
+        privilege = event.deep_get(
+            "debugContext",
+            "debugData",
+            "privilegeGranted",
+            default="<UNKNOWN_PRIVILEGE>",
+        )
+
+        return (
+            f"{event.deep_get('actor', 'displayName')} "
+            f"<{event.deep_get('actor', 'alternateId')}> granted "
+            f"[{privilege}] privileges to {display_name} <{alternate_id}>"
+        )
+
+    def _severity(event: PantherEvent) -> str:
+        if (
+            event.deep_get("debugContext", "debugData", "privilegeGranted")
+            == "Super administrator"
+        ):
+            return "HIGH"
+        return "INFO"
 
     return detection.Rule(
         name=(overrides.name or "Okta Admin Role Assigned"),
@@ -137,7 +125,7 @@ def admin_role_assigned(
         severity=(
             overrides.severity
             or detection.DynamicStringField(
-                func=_admin_role_assigned_severity,
+                func=_severity,
                 fallback=detection.SeverityInfo,
             )
         ),
@@ -163,7 +151,7 @@ def admin_role_assigned(
                 ),
             ]
         ),
-        alert_title=(overrides.alert_title or _admin_role_assigned_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
         unit_tests=(
