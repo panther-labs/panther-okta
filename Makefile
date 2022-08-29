@@ -27,4 +27,4 @@ utl_activate: venv
 publish: utl_activate
 	rm -rf dist
 	python3 setup.py sdist
-	twine upload ./dist/panther_utils-*.tar.gz
+	twine upload ./dist/panther_okta-*.tar.gz

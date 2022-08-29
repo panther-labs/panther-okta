@@ -9,4 +9,4 @@ def use_all_with_defaults() -> None:
     rules.brute_force_logins()
     rules.account_support_access()
     rules.support_reset()
-    # rules.geo_improbable_access()
+    rules.geo_improbable_access()

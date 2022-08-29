@@ -4,7 +4,7 @@ from panther_config import detection
 import panther_okta as okta
 
 
-class TestRules(unittest.TestCase):
+class TestSupportActions(unittest.TestCase):
     def test_account_support_access_defaults(self):
         rule = okta.rules.account_support_access()
 
@@ -14,6 +14,15 @@ class TestRules(unittest.TestCase):
     def test_account_support_access_name_override(self):
         name_override = "Access Granted for Okta Support"
         rule = okta.rules.account_support_access(
+            detection.RuleOptions(name=name_override)
+        )
+
+        self.assertIsInstance(rule, detection.Rule)
+        self.assertEqual(rule.name, name_override)
+
+    def test_account_support_reset(self):
+        name_override = "Override Name"
+        rule = okta.rules.support_reset(
             detection.RuleOptions(name=name_override)
         )
 
