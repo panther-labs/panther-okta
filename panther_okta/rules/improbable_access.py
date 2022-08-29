@@ -121,34 +121,30 @@ def geo_improbable_access_filter() -> detection.PythonFilter:
     return detection.PythonFilter(func=_geo_improbable_access_filter)
 
 
-def _geo_improbable_access_title(event: PantherEvent) -> str:
-    from panther_oss_helpers import get_string_set  # type: ignore
-
-    login_key = (
-        f"Okta.Login.GeographicallyImprobable{event.deep_get('actor', 'alternateId')}"
-    )
-
-    # Retrieve the info from the cache, if any
-    last_login = get_string_set(login_key)
-
-    # (Optional) Return a string which will be shown as the alert title.
-    old_city = last_login.get("old_city", "<NOT_STORED>")
-    new_city = last_login.get("city", "<UNKNOWN_NEW_CITY>")
-
-    return (
-        f"Geographically improbable login for user [{event.deep_get('actor', 'alternateId')}] "
-        f"from [{old_city}]  to [{new_city}]"
-    )
-
-
-def _geo_improbable_access_title_group_by(event: PantherEvent) -> str:
-    return typing.cast(str, event.deep_get("actor", "alternateId"))
-
-
 def geo_improbable_access(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has subsequent logins from two geographic locations that are very far apart"""
+
+    def _title(event: PantherEvent) -> str:
+        from panther_oss_helpers import get_string_set  # type: ignore
+
+        login_key = f"Okta.Login.GeographicallyImprobable{event.deep_get('actor', 'alternateId')}"
+
+        # Retrieve the info from the cache, if any
+        last_login = get_string_set(login_key)
+
+        # (Optional) Return a string which will be shown as the alert title.
+        old_city = last_login.get("old_city", "<NOT_STORED>")
+        new_city = last_login.get("city", "<UNKNOWN_NEW_CITY>")
+
+        return (
+            f"Geographically improbable login for user [{event.deep_get('actor', 'alternateId')}] "
+            f"from [{old_city}]  to [{new_city}]"
+        )
+
+    def _group_by(event: PantherEvent) -> str:
+        return typing.cast(str, event.deep_get("actor", "alternateId"))
 
     return detection.Rule(
         name=(overrides.name or "Geographically Improbable Okta Login"),
@@ -171,9 +167,13 @@ def geo_improbable_access(
                 geo_improbable_access_filter(),
             ]
         ),
-        alert_title=(overrides.alert_title or _geo_improbable_access_title),
+        alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
         summary_attrs=(overrides.summary_attrs or SHARED_SUMMARY_ATTRS),
+        alert_grouping=(
+            overrides.alert_grouping
+            or detection.AlertGrouping(group_by=_group_by, period_minutes=15)
+        ),
         unit_tests=(
             overrides.unit_tests
             or [

@@ -22,9 +22,7 @@ class TestSupportActions(unittest.TestCase):
 
     def test_account_support_reset(self):
         name_override = "Override Name"
-        rule = okta.rules.support_reset(
-            detection.RuleOptions(name=name_override)
-        )
+        rule = okta.rules.support_reset(detection.RuleOptions(name=name_override))
 
         self.assertIsInstance(rule, detection.Rule)
         self.assertEqual(rule.name, name_override)

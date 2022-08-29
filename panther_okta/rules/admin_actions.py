@@ -52,7 +52,7 @@ def admin_disabled_mfa(
         filters=(
             overrides.filters
             or [
-                match_filters.deep_equal("eventType", SUPPORT_ACCESS_EVENTS),
+                match_filters.deep_equal("eventType", "system.mfa.factor.deactivate"),
             ]
         ),
         alert_title=(overrides.alert_title or _title),

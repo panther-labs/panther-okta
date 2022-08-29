@@ -80,20 +80,34 @@ def account_support_access(
 def support_reset(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
-    """DESCRIPTION"""
+    """A Password or MFA factor was reset by Okta Support"""
 
     def _title(event: PantherEvent) -> str:
         return f"Okta Support Reset Password or MFA for user {event.udm('actor_user')}"
 
     return detection.Rule(
-        name=(overrides.name or ""),
-        rule_id=(overrides.rule_id or ""),
+        name=(overrides.name or "Okta Support Reset Credential"),
+        rule_id=(overrides.rule_id or "Okta.Support.Reset"),
         log_types=(overrides.log_types or [SYSTEM_LOG_TYPE]),
-        tags=(overrides.tags or rule_tags()),
-        severity=(overrides.severity or detection.SeverityInfo),
-        description=(overrides.description or ""),
-        reference=(overrides.reference or ""),
-        runbook=(overrides.runbook or ""),
+        tags=(
+            overrides.tags
+            or rule_tags(
+                standard_tags.DATA_MODEL, "Initial Access:Trusted Relationship"
+            )
+        ),
+        reports=(overrides.reports or {detection.ReportKeyMITRE: ["TA0001:T1199"]}),
+        severity=(overrides.severity or detection.SeverityHigh),
+        description=(
+            overrides.description
+            or "A Password or MFA factor was reset by Okta Support"
+        ),
+        reference=(
+            overrides.reference
+            or "https://help.okta.com/en/prod/Content/Topics/Directory/get-support.htm#:~:text=Visit%20the%20Okta%20Help%20Center,1%2D800%2D219%2D0964"
+        ),
+        runbook=(
+            overrides.runbook or "Contact Admin to ensure this was sanctioned activity"
+        ),
         filters=(
             overrides.filters
             or [
@@ -111,9 +125,14 @@ def support_reset(
             overrides.unit_tests
             or [
                 detection.JSONUnitTest(
-                    name="",
+                    name="Support Reset Credential",
                     expect_match=True,
-                    data="",
+                    data=sample_logs.support_password_reset,
+                ),
+                detection.JSONUnitTest(
+                    name="Reset by Company Admin",
+                    expect_match=False,
+                    data=sample_logs.admin_password_reset,
                 ),
             ]
         ),
