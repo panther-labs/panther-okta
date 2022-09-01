@@ -10,6 +10,7 @@ from panther_okta._shared import (
     SYSTEM_LOG_TYPE,
     SHARED_SUMMARY_ATTRS,
     create_alert_context,
+    pick_filters,
 )
 
 __all__ = ["brute_force_logins"]
@@ -20,9 +21,6 @@ def brute_force_logins(
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has failed to login more than 5 times in 15 minutes"""
-
-    if pre_filters is None:
-        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         return (
@@ -49,13 +47,13 @@ def brute_force_logins(
             overrides.runbook
             or "Reach out to the user if needed to validate the activity, and then block the IP"
         ),
-        filters=(
-            overrides.filters
-            or pre_filters
-            + [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),

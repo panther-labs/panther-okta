@@ -10,6 +10,7 @@ from .._shared import (
     SYSTEM_LOG_TYPE,
     create_alert_context,
     SHARED_SUMMARY_ATTRS,
+    pick_filters,
 )
 
 __all__ = ["geo_improbable_access", "geo_improbable_access_filter"]
@@ -127,9 +128,6 @@ def geo_improbable_access(
 ) -> detection.Rule:
     """A user has subsequent logins from two geographic locations that are very far apart"""
 
-    if pre_filters is None:
-        pre_filters = []
-
     def _title(event: PantherEvent) -> str:
         from panther_oss_helpers import get_string_set  # type: ignore
 
@@ -163,14 +161,14 @@ def geo_improbable_access(
             overrides.runbook
             or "Reach out to the user if needed to validate the activity, then lock the account"
         ),
-        filters=(
-            overrides.filters
-            or pre_filters
-            + [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
                 geo_improbable_access_filter(),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
