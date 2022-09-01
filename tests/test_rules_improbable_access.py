@@ -15,7 +15,7 @@ class TestRulesImprobableAccess(unittest.TestCase):
     def test_improbable_access(self):
         name_override = "Override Name"
         rule = okta.rules.geo_improbable_access(
-            detection.RuleOptions(name=name_override)
+            overrides=detection.RuleOptions(name=name_override)
         )
 
         self.assertIsInstance(rule, detection.Rule)
@@ -24,7 +24,7 @@ class TestRulesImprobableAccess(unittest.TestCase):
     def test_improbable_access_group_by(self):
         name_override = "Override Name"
         rule = okta.rules.geo_improbable_access(
-            detection.RuleOptions(name=name_override)
+            overrides=detection.RuleOptions(name=name_override)
         )
 
         test_evt = PantherEvent({"actor": {"alternateId": "alt-id"}}, data_model=None)

@@ -27,6 +27,9 @@ def account_support_access(
 ) -> detection.Rule:
     """Detects when an admin user has granted access to Okta Support for your account"""
 
+    if pre_filters is None:
+        pre_filters = []
+
     def _title(event: PantherEvent) -> str:
         return f"Okta Support Access Granted by {event.udm('actor_user')}"
 
