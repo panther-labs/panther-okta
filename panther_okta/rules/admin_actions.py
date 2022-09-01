@@ -91,7 +91,6 @@ def admin_role_assigned(
     if pre_filters is None:
         pre_filters = []
 
-
     def _title(event: PantherEvent) -> str:
         target = event.get("target", [{}])
         display_name = (
