@@ -55,7 +55,8 @@ def account_support_access(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_in("eventType", SUPPORT_ACCESS_EVENTS),
             ]
         ),
@@ -117,7 +118,8 @@ def support_reset(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_in("eventType", SUPPORT_RESET_EVENTS),
                 match_filters.deep_equal("actor.alternateId", "system@okta.com"),
                 match_filters.deep_equal("transaction.id", "unknown"),

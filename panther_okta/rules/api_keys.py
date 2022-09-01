@@ -63,7 +63,8 @@ def api_key_created(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "system.api_token.create"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]
@@ -120,7 +121,8 @@ def api_key_revoked(
         runbook=(overrides.runbook or "Validate this action was authorized."),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "system.api_token.revoke"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]

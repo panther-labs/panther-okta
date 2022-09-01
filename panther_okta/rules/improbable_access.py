@@ -165,7 +165,8 @@ def geo_improbable_access(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
                 geo_improbable_access_filter(),

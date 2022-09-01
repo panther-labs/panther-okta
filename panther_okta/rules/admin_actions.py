@@ -57,7 +57,8 @@ def admin_disabled_mfa(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "system.mfa.factor.deactivate"),
             ]
         ),
@@ -153,7 +154,8 @@ def admin_role_assigned(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "user.account.privilege.grant"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
                 match_filters.deep_equal(

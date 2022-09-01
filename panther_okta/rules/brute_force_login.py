@@ -51,7 +51,8 @@ def brute_force_logins(
         ),
         filters=(
             overrides.filters
-            or pre_filters + [
+            or pre_filters
+            + [
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
             ]
