@@ -1,3 +1,5 @@
+import typing
+
 from panther_core import PantherEvent
 from panther_utils import match_filters
 from panther_config import detection
@@ -20,6 +22,7 @@ __all__ = [
 
 
 def account_support_access(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """Detects when an admin user has granted access to Okta Support for your account"""
@@ -52,7 +55,7 @@ def account_support_access(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_in("eventType", SUPPORT_ACCESS_EVENTS),
             ]
         ),
@@ -78,9 +81,13 @@ def account_support_access(
 
 
 def support_reset(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A Password or MFA factor was reset by Okta Support"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         return f"Okta Support Reset Password or MFA for user {event.udm('actor_user')}"
@@ -110,7 +117,7 @@ def support_reset(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_in("eventType", SUPPORT_RESET_EVENTS),
                 match_filters.deep_equal("actor.alternateId", "system@okta.com"),
                 match_filters.deep_equal("transaction.id", "unknown"),

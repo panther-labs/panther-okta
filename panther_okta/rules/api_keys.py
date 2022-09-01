@@ -1,3 +1,5 @@
+import typing
+
 from panther_core import PantherEvent
 from panther_utils import match_filters
 from panther_config import detection
@@ -17,9 +19,13 @@ __all__ = [
 
 
 def api_key_created(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user created an API Key in Okta"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         target = event.get("target", [{}])
@@ -57,7 +63,7 @@ def api_key_created(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "system.api_token.create"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]
@@ -79,9 +85,13 @@ def api_key_created(
 
 
 def api_key_revoked(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has revoked an API Key in Okta"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         target = event.get("target", [{}])
@@ -110,7 +120,7 @@ def api_key_revoked(
         runbook=(overrides.runbook or "Validate this action was authorized."),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "system.api_token.revoke"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
             ]

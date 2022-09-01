@@ -1,3 +1,5 @@
+import typing
+
 from panther_core import PantherEvent
 from panther_utils import match_filters
 from panther_config import detection
@@ -14,9 +16,13 @@ __all__ = ["brute_force_logins"]
 
 
 def brute_force_logins(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has failed to login more than 5 times in 15 minutes"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         return (
@@ -45,7 +51,7 @@ def brute_force_logins(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
             ]

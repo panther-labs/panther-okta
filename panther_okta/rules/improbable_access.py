@@ -122,9 +122,13 @@ def geo_improbable_access_filter() -> detection.PythonFilter:
 
 
 def geo_improbable_access(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has subsequent logins from two geographic locations that are very far apart"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         from panther_oss_helpers import get_string_set  # type: ignore
@@ -161,7 +165,7 @@ def geo_improbable_access(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
                 geo_improbable_access_filter(),

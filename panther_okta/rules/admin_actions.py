@@ -1,3 +1,5 @@
+import typing
+
 from panther_utils import match_filters
 from panther_config import detection, PantherEvent
 
@@ -18,9 +20,13 @@ __all__ = [
 
 
 def admin_disabled_mfa(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """An admin user has disabled the MFA requirement for your Okta account"""
+
+    if pre_filters is None:
+        pre_filters = []
 
     def _title(event: PantherEvent) -> str:
         return f"Okta System-wide MFA Disabled by Admin User {event.udm('actor_user')}"
@@ -51,7 +57,7 @@ def admin_disabled_mfa(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "system.mfa.factor.deactivate"),
             ]
         ),
@@ -77,9 +83,14 @@ def admin_disabled_mfa(
 
 
 def admin_role_assigned(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has been granted administrative privileges in Okta"""
+
+    if pre_filters is None:
+        pre_filters = []
+
 
     def _title(event: PantherEvent) -> str:
         target = event.get("target", [{}])
@@ -143,7 +154,7 @@ def admin_role_assigned(
         ),
         filters=(
             overrides.filters
-            or [
+            or pre_filters + [
                 match_filters.deep_equal("eventType", "user.account.privilege.grant"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
                 match_filters.deep_equal(
