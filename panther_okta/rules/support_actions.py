@@ -1,3 +1,5 @@
+import typing
+
 from panther_core import PantherEvent
 from panther_utils import match_filters
 from panther_config import detection
@@ -5,6 +7,7 @@ from panther_config import detection
 from .. import sample_logs
 from .._shared import (
     rule_tags,
+    pick_filters,
     standard_tags,
     SYSTEM_LOG_TYPE,
     create_alert_context,
@@ -20,6 +23,7 @@ __all__ = [
 
 
 def account_support_access(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """Detects when an admin user has granted access to Okta Support for your account"""
@@ -50,11 +54,12 @@ def account_support_access(
         runbook=(
             overrides.runbook or "Contact Admin to ensure this was sanctioned activity"
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_in("eventType", SUPPORT_ACCESS_EVENTS),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
@@ -78,6 +83,7 @@ def account_support_access(
 
 
 def support_reset(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A Password or MFA factor was reset by Okta Support"""
@@ -108,15 +114,16 @@ def support_reset(
         runbook=(
             overrides.runbook or "Contact Admin to ensure this was sanctioned activity"
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_in("eventType", SUPPORT_RESET_EVENTS),
                 match_filters.deep_equal("actor.alternateId", "system@okta.com"),
                 match_filters.deep_equal("transaction.id", "unknown"),
                 match_filters.deep_equal("userAgent.rawUserAgent", None),
                 match_filters.deep_equal("client.geographicalContext.country", None),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),

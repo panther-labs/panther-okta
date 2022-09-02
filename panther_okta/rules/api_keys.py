@@ -1,3 +1,5 @@
+import typing
+
 from panther_core import PantherEvent
 from panther_utils import match_filters
 from panther_config import detection
@@ -5,6 +7,7 @@ from panther_config import detection
 from .. import sample_logs
 from .._shared import (
     rule_tags,
+    pick_filters,
     SYSTEM_LOG_TYPE,
     SHARED_SUMMARY_ATTRS,
     create_alert_context,
@@ -17,6 +20,7 @@ __all__ = [
 
 
 def api_key_created(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user created an API Key in Okta"""
@@ -55,12 +59,13 @@ def api_key_created(
             overrides.runbook
             or "Reach out to the user if needed to validate the activity."
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "system.api_token.create"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
@@ -79,6 +84,7 @@ def api_key_created(
 
 
 def api_key_revoked(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has revoked an API Key in Okta"""
@@ -108,12 +114,13 @@ def api_key_revoked(
             or "https://help.okta.com/en/prod/Content/Topics/Security/API.htm"
         ),
         runbook=(overrides.runbook or "Validate this action was authorized."),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "system.api_token.revoke"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),

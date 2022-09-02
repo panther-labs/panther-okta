@@ -10,6 +10,7 @@ from .._shared import (
     SYSTEM_LOG_TYPE,
     create_alert_context,
     SHARED_SUMMARY_ATTRS,
+    pick_filters,
 )
 
 __all__ = ["geo_improbable_access", "geo_improbable_access_filter"]
@@ -122,6 +123,7 @@ def geo_improbable_access_filter() -> detection.PythonFilter:
 
 
 def geo_improbable_access(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has subsequent logins from two geographic locations that are very far apart"""
@@ -159,13 +161,14 @@ def geo_improbable_access(
             overrides.runbook
             or "Reach out to the user if needed to validate the activity, then lock the account"
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "user.session.start"),
                 match_filters.deep_equal("outcome.result", "FAILURE"),
                 geo_improbable_access_filter(),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),

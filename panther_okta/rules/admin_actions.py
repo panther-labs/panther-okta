@@ -1,3 +1,5 @@
+import typing
+
 from panther_utils import match_filters
 from panther_config import detection, PantherEvent
 
@@ -9,6 +11,7 @@ from .._shared import (
     create_alert_context,
     SHARED_SUMMARY_ATTRS,
     SUPPORT_ACCESS_EVENTS,
+    pick_filters,
 )
 
 __all__ = [
@@ -18,6 +21,7 @@ __all__ = [
 
 
 def admin_disabled_mfa(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """An admin user has disabled the MFA requirement for your Okta account"""
@@ -49,11 +53,12 @@ def admin_disabled_mfa(
         runbook=(
             overrides.runbook or "Contact Admin to ensure this was sanctioned activity"
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "system.mfa.factor.deactivate"),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),
@@ -77,6 +82,7 @@ def admin_disabled_mfa(
 
 
 def admin_role_assigned(
+    pre_filters: typing.List[detection.AnyFilter] = None,
     overrides: detection.RuleOptions = detection.RuleOptions(),
 ) -> detection.Rule:
     """A user has been granted administrative privileges in Okta"""
@@ -141,15 +147,16 @@ def admin_role_assigned(
             overrides.runbook
             or "Reach out to the user if needed to validate the activity"
         ),
-        filters=(
-            overrides.filters
-            or [
+        filters=pick_filters(
+            overrides=overrides,
+            pre_filters=pre_filters,
+            defaults=[
                 match_filters.deep_equal("eventType", "user.account.privilege.grant"),
                 match_filters.deep_equal("outcome.result", "SUCCESS"),
-                match_filters.deep_equal(
+                match_filters.deep_equal_pattern(
                     "debugContext.debugData.privilegeGranted", r"[aA]dministrator"
                 ),
-            ]
+            ],
         ),
         alert_title=(overrides.alert_title or _title),
         alert_context=(overrides.alert_context or create_alert_context),

@@ -1,5 +1,5 @@
-import typing
-from panther_config import PantherEvent
+from typing import Dict, List, Any, Optional
+from panther_config import PantherEvent, detection
 from panther_utils import standard_tags
 
 __all__ = [
@@ -42,11 +42,11 @@ SHARED_SUMMARY_ATTRS = [
 ]
 
 
-def rule_tags(*extra_tags: str) -> typing.List[str]:
+def rule_tags(*extra_tags: str) -> List[str]:
     return [*SHARED_TAGS, *extra_tags]
 
 
-def create_alert_context(event: PantherEvent) -> typing.Dict[str, typing.Any]:
+def create_alert_context(event: PantherEvent) -> Dict[str, Any]:
     """Returns common context for Okta alerts"""
 
     return {
@@ -55,3 +55,23 @@ def create_alert_context(event: PantherEvent) -> typing.Dict[str, typing.Any]:
         "target": event.get("target", ""),
         "client": event.get("client", ""),
     }
+
+
+def pick_filters(
+    pre_filters: Optional[List[detection.AnyFilter]],
+    overrides: detection.RuleOptions,
+    defaults: List[detection.AnyFilter],
+) -> List[detection.AnyFilter]:
+    if pre_filters is None:
+        pre_filters = []
+
+    if overrides.filters is None:
+        return pre_filters + defaults
+    else:
+        if isinstance(overrides.filters, detection.AnyFilter):
+            return pre_filters + [overrides.filters]
+
+        if isinstance(overrides.filters, list):
+            return pre_filters + overrides.filters
+
+    raise RuntimeError("unable to pick filters")
