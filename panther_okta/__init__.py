@@ -10,6 +10,7 @@ def use_all_with_defaults(
     rules.admin_disabled_mfa()
     rules.admin_role_assigned()
     rules.api_key_created()
+    rules.api_key_revoked()
     rules.brute_force_logins()
     rules.account_support_access()
     rules.support_reset()
