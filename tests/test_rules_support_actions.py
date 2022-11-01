@@ -1,6 +1,6 @@
 import unittest
 
-from panther_config import detection
+from panther_sdk import detection
 import panther_okta as okta
 
 

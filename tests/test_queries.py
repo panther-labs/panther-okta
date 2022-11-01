@@ -1,7 +1,7 @@
 import typing
 import unittest
 
-from panther_config import query
+from panther_sdk import query
 import panther_okta as okta
 
 

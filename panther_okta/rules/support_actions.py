@@ -2,7 +2,7 @@ import typing
 
 from panther_core import PantherEvent
 from panther_utils import match_filters
-from panther_config import detection
+from panther_sdk import detection
 
 from .. import sample_logs
 from .._shared import (

@@ -1,5 +1,5 @@
 from typing import Literal
-from panther_config import query
+from panther_sdk import query
 
 __all__ = [
     "activity_audit",

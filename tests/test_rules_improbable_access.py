@@ -1,7 +1,7 @@
 import unittest
 import panther_okta as okta
 
-from panther_config import testing, detection, PantherEvent
+from panther_sdk import testing, detection, PantherEvent
 from panther_okta.rules.improbable_access import geo_improbable_access_filter
 
 

@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from panther_config import detection, PantherEvent
+from panther_sdk import detection, PantherEvent
 import panther_okta as okta
 
 

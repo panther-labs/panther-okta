@@ -1,6 +1,6 @@
 import typing
 import unittest
-from panther_config import PantherEvent
+from panther_sdk import PantherEvent
 import panther_okta as okta
 
 
