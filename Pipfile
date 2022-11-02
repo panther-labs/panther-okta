@@ -12,7 +12,7 @@ twine = ">=4.0.1"
 
 [packages]
 panther_sdk = ">=0.0.19"
-panther_utils = ">=0.1.2"
+panther_utils = ">=0.2.0"
 
 [requires]
 python_version = "3.9"
