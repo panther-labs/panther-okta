@@ -6,10 +6,10 @@ import panther_okta as okta
 
 class TestModule(unittest.TestCase):
     def test_root_module_api(self) -> None:
-        self.assertIsInstance(okta.use_all_with_defaults, typing.Callable)
+        self.assertIsInstance(okta.use_all_with_defaults, typing.Callable)  # type: ignore
 
     def test_create_alert_context(self) -> None:
-        self.assertIsInstance(okta.create_alert_context, typing.Callable)
+        self.assertIsInstance(okta.create_alert_context, typing.Callable)  # type: ignore
 
         mock_data = {
             "p_any_ip_addresses": ["0.0.0.0"],
