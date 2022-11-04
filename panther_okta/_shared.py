@@ -1,5 +1,5 @@
 from typing import Dict, List, Any, Optional
-from panther_config import PantherEvent, detection
+from panther_sdk import PantherEvent, detection
 from panther_utils import standard_tags
 
 __all__ = [

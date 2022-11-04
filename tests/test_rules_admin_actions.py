@@ -1,12 +1,12 @@
 import json
 import unittest
 
-from panther_config import detection, PantherEvent
+from panther_sdk import detection, PantherEvent
 import panther_okta as okta
 
 
 class TestRulesAdminActions(unittest.TestCase):
-    def test_admin_disabled_mfa(self):
+    def test_admin_disabled_mfa(self) -> None:
         name_override = "Override Name"
         rule = okta.rules.admin_disabled_mfa(
             overrides=detection.RuleOptions(name=name_override)
@@ -15,7 +15,7 @@ class TestRulesAdminActions(unittest.TestCase):
         self.assertIsInstance(rule, detection.Rule)
         self.assertEqual(rule.name, name_override)
 
-    def test_admin_role_assigned(self):
+    def test_admin_role_assigned(self) -> None:
         name_override = "Override Name"
         rule = okta.rules.admin_role_assigned(
             overrides=detection.RuleOptions(name=name_override)
@@ -26,7 +26,7 @@ class TestRulesAdminActions(unittest.TestCase):
 
         evt = PantherEvent(json.loads(okta.sample_logs.admin_access_assigned))
 
-        title = rule.alert_title(evt)
+        title = rule.alert_title(evt)  # type: ignore
 
         self.assertEqual(
             title,

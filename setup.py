@@ -18,8 +18,8 @@ setup(
     include_package_data=True,
     keywords='security detection',
     install_requires=[
-        'panther_config>=0.0.19',
-        'panther_utils>=0.1.0',
+        'panther_sdk>=0.0.19',
+        'panther_utils>=0.2.0',
     ],
     classifiers=[
         'Development Status :: 1 - Planning',

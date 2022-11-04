@@ -1,30 +1,31 @@
 # Targets for local development
-install:: utl_activate ci_install
-fmt::     install ci_fmt
+shell::   pipenv shell
+install:: ci_install
+sync::    ci_sync 
+fmt::     ci_fmt
 lint::    fmt ci_lint
 test::    fmt ci_lint ci_test
 
-# Targets for CI
-ci_install::
-	pip3 install -qr dev-requirements.txt
+.SILENT: git_reset
 
+# Targets for CI
 ci_fmt::
-	black panther_okta tests
+	pipenv run black panther_okta tests
 
 ci_lint::
-	mypy --config-file mypy.ini panther_okta
+	pipenv run mypy --config-file mypy.ini panther_okta tests
 
 ci_test::
-	nosetests -v --with-coverage --cover-package=panther_okta
+	pipenv run nosetests -v --with-coverage --cover-package=panther_okta
 
-# Utility targets
-venv:
-	python3 -m venv venv
+ci_install:
+	pipenv install --dev
 
-utl_activate: venv
-	. venv/bin/activate
+ci_sync:
+	pipenv sync --dev
 
-publish: utl_activate
+# Other targets
+publish:
 	rm -rf dist
-	python3 setup.py sdist
-	twine upload ./dist/panther_okta-*.tar.gz
+	pipenv run python3 setup.py sdist
+	pipenv run twine upload ./dist/panther_okta-*.tar.gz

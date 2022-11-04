@@ -1,5 +1,5 @@
 ## panther-okta
-Panther Config SDK repo for Okta content
+Panther SDK repo for Okta content
 
 
 ### Install all content with defaults:
@@ -12,7 +12,7 @@ okta.use_all_with_defaults()
 
 ### Install a single rule with overrides:
 ```python
-from panther_config import detection
+from panther_sdk import detection
 from panther_utils import match_filters
 import panther_okta as okta
 
